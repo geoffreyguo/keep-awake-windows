@@ -1,16 +1,18 @@
 import tkinter as tk
 import pyautogui
+import time
 import sys
 
+# 禁用防故障
 pyautogui.FAILSAFE = False
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("自动防锁屏(鼠标版)")
+        self.root.title("自动防锁屏(强效版)")
         self.root.geometry("300x150")
         
-        self.label = tk.Label(root, text="🖱️ 鼠标模拟已启用", font=("Arial", 12, "bold"), fg="#D2691E")
+        self.label = tk.Label(root, text="🚀 强效防锁屏已启用", font=("Arial", 12, "bold"), fg="#FF0000")
         self.label.pack(pady=20)
         
         self.exit_button = tk.Button(root, text="停止并退出", command=self.on_closing)
@@ -21,10 +23,22 @@ class App:
 
     def jiggle_mouse(self):
         try:
-            pyautogui.moveRel(1, 0)
-            pyautogui.moveRel(-1, 0)
+            # 绝招1：按下无害的 F15 键，向系统发送真实的键盘活动信号
+            pyautogui.press('f15')
+            
+            # 绝招2：模拟人类移动鼠标（移动幅度稍微大一点，且不要瞬间完成）
+            x, y = pyautogui.position()
+            pyautogui.moveTo(x + 5, y + 5)
+            
+            # 短暂亦可接受的停顿，骗过系统的判定
+            self.root.update()
+            time.sleep(0.1) 
+            
+            pyautogui.moveTo(x, y)
         except Exception:
             pass
+        
+        # 依然是每 60 秒触发一次
         self.jiggle_job = self.root.after(60000, self.jiggle_mouse)
 
     def on_closing(self):
