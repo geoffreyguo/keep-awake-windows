@@ -1,24 +1,40 @@
-import ctypes
-import time
+import tkinter as tk
+import pyautogui
 import sys
 
-ES_CONTINUOUS = 0x80000000
-ES_SYSTEM_REQUIRED = 0x00000001
-ES_DISPLAY_REQUIRED = 0x00000002
+pyautogui.FAILSAFE = False
 
-def prevent_lock():
-    state = ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
-    ctypes.windll.kernel32.SetThreadExecutionState(state)
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("自动防锁屏(鼠标版)")
+        self.root.geometry("300x150")
+        
+        self.label = tk.Label(root, text="🖱️ 鼠标模拟已启用", font=("Arial", 12, "bold"), fg="#D2691E")
+        self.label.pack(pady=20)
+        
+        self.exit_button = tk.Button(root, text="停止并退出", command=self.on_closing)
+        self.exit_button.pack(pady=10)
+        
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.jiggle_mouse()
 
-def allow_lock():
-    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+    def jiggle_mouse(self):
+        try:
+            pyautogui.moveRel(1, 0)
+            pyautogui.moveRel(-1, 0)
+        except Exception:
+            pass
+        self.jiggle_job = self.root.after(60000, self.jiggle_mouse)
+
+    def on_closing(self):
+        if hasattr(self, 'jiggle_job'):
+            self.root.after_cancel(self.jiggle_job)
+        self.root.destroy()
+        sys.exit(0)
 
 if __name__ == "__main__":
-    try:
-        prevent_lock()
-        print("防锁屏已启动，按 Ctrl+C 退出...")
-        while True:
-            time.sleep(3600) 
-    except KeyboardInterrupt:
-        allow_lock()
-        sys.exit(0)
+    root = tk.Tk()
+    root.attributes("-topmost", True)
+    app = App(root)
+    root.mainloop()
